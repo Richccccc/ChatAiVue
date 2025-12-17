@@ -15,7 +15,10 @@ import { useUserStoreHook } from "@/store/modules/user";
 
 // 相关配置请参考：www.axios-js.com/zh-cn/docs/#axios-request-config-1
 const defaultConfig: AxiosRequestConfig = {
-  baseURL: "/api",
+  // 优先使用 VITE_PROXY_DOMAIN_REAL，如果未设置则使用 /api
+  baseURL: import.meta.env.VITE_PROXY_DOMAIN_REAL
+    ? import.meta.env.VITE_PROXY_DOMAIN_REAL + "/api"
+    : "/api",
   // 请求超时时间
   timeout: 10000,
   headers: {
@@ -133,14 +136,14 @@ class PureHttp {
         // 根据 ApiResponse.java，后端返回 { success: boolean, data: T, message: string }
         // 所以我们应该检查 response.data.success
         if (response.data && response.data.success === false) {
-             // 构造一个 Error 对象，并将后端返回的 message 放入其中
-             const error: any = new Error(response.data.message || "请求失败");
-             error.response = response;
-             // 确保 error.message 是后端返回的 message
-             error.message = response.data.message; 
-             // 也可以附加一个 custom 属性
-             error.isBusinessError = true;
-             return Promise.reject(error);
+          // 构造一个 Error 对象，并将后端返回的 message 放入其中
+          const error: any = new Error(response.data.message || "请求失败");
+          error.response = response;
+          // 确保 error.message 是后端返回的 message
+          error.message = response.data.message;
+          // 也可以附加一个 custom 属性
+          error.isBusinessError = true;
+          return Promise.reject(error);
         }
         return response.data;
       },
