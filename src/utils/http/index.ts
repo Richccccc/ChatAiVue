@@ -20,7 +20,7 @@ const defaultConfig: AxiosRequestConfig = {
     ? import.meta.env.VITE_PROXY_DOMAIN_REAL + "/api"
     : "/api",
   // 请求超时时间
-  timeout: 10000,
+  timeout: 60000,
   headers: {
     Accept: "application/json, text/plain, */*",
     "Content-Type": "application/json",
