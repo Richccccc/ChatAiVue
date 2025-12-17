@@ -1,43 +1,64 @@
-<h1>vue-pure-admin精简版（非国际化版本）</h1>
+# Fake Job Prediction System - Frontend
 
-[![license](https://img.shields.io/github/license/pure-admin/vue-pure-admin.svg)](LICENSE)
+这是一个基于 **Vue 3** + **Vite** + **TypeScript** + **Pure Admin** 构建的现代化前端管理系统。
+该项目主要用于假职位预测系统的可视化管理，包含模型训练、部署分析以及职位数据的 CRUD 管理。
 
-**中文** | [English](./README.en-US.md)
+## 🚀 功能特性
 
-## 介绍
+- **可视化大屏 (Dashboard)**: 直观的数据展示和分析概览。
+- **AI 模型管理**:
+  - **模型管理**: 统一管理已上传和训练的模型。
+  - **模型训练**: 可视化配置训练参数，监控训练进度。
+  - **模型分析**: 部署模型并展示预测分析结果。
+- **职位数据管理**:
+  - 完整的职位增删改查 (CRUD) 功能。
+  - 支持多维度筛选和数据导出。
+- **现代化技术栈**: 使用最新的前端技术，保证高性能和良好的开发体验。
 
-精简版是基于 [vue-pure-admin](https://github.com/pure-admin/vue-pure-admin) 提炼出的架子，包含主体功能，更适合实际项目开发，打包后的大小在全局引入 [element-plus](https://element-plus.org) 的情况下仍然低于 `2.3MB`，并且会永久同步完整版的代码。开启 `brotli` 压缩和 `cdn` 替换本地库模式后，打包大小低于 `350kb`
+## 🛠️ 技术栈
 
-## 版本选择
+- **框架**: [Vue 3](https://vuejs.org/)
+- **构建工具**: [Vite](https://vitejs.dev/)
+- **语言**: [TypeScript](https://www.typescriptlang.org/)
+- **UI 组件库**: [Element Plus](https://element-plus.org/)
+- **状态管理**: [Pinia](https://pinia.vuejs.org/)
+- **样式**: [TailwindCSS](https://tailwindcss.com/)
+- **图标**: Iconify
 
-当前是非国际化版本，如果您需要国际化版本 [请点击](https://github.com/pure-admin/pure-admin-thin/tree/i18n)
+## 📦 安装与运行
 
-## 配套视频
+确保你本地安装了 [Node.js](https://nodejs.org/) (推荐 v18+)。
 
-[点我查看 UI 设计](https://www.bilibili.com/video/BV17g411T7rq)  
-[点我查看快速开发教程](https://www.bilibili.com/video/BV1kg411v7QT)
+### 1. 克隆项目
+```bash
+git clone https://github.com/Richccccc/ChatAiVue.git
+cd ChatAiVue
+```
 
-## 配套保姆级文档
+### 2. 安装依赖
+建议使用 `pnpm` 进行安装，速度更快。
+```bash
+pnpm install
+# 或者 npm install
+```
 
-[点我查看 vue-pure-admin 文档](https://pure-admin.cn/)  
-[点我查看 @pureadmin/utils 文档](https://pure-admin-utils.netlify.app)
+### 3. 启动开发服务器
+```bash
+pnpm dev
+```
+启动后访问 `http://localhost:8848` (端口可能不同，请以终端输出为准)。
 
-## 高级服务
+### 4. 构建生产版本
+```bash
+pnpm build
+```
+构建产物将输出到 `dist` 目录。
 
-[点我查看详情](https://pure-admin.cn/pages/service/)
+## ☁️ 部署
 
-## 预览
+本项目支持一键部署到 **Vercel** 或 **Netlify**。
 
-[查看预览](https://pure-admin-thin.netlify.app/#/login)
+详细部署指南请参考项目中的 deployment_guide.md (如果有)。
 
-## 维护者
-
-[xiaoxian521](https://github.com/xiaoxian521)
-
-## ⚠️ 注意
-
-精简版不接受任何 `issues` 和 `pr`，如果有问题请到完整版 [issues](https://github.com/pure-admin/vue-pure-admin/issues/new/choose) 去提，谢谢！
-
-## 许可证
-
-[MIT © 2020-present, pure-admin](./LICENSE)
+## 📄 License
+[MIT](./LICENSE)

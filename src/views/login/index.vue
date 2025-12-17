@@ -64,8 +64,16 @@ const onLogin = async (formEl: FormInstance | undefined) => {
                 .finally(() => (disabled.value = false));
             });
           } else {
-            message("登录失败", { type: "error" });
+            // 正常情况下，http 拦截器会抛出异常，不会走到这里。
+            // 但如果某种情况走到这里，说明 success 为 false 但没被拦截
+            message(res.message || res.error || "登录失败", { type: "error" });
           }
+        })
+        .catch(err => {
+          // 捕获网络或其他异常，以及 http 拦截器抛出的业务异常
+          // 优先使用 err.message (拦截器设置的后端 message)，其次是 err.response?.data?.message
+          const errorMsg = err.message || err.response?.data?.message || "登录请求异常";
+          message(errorMsg, { type: "error" });
         })
         .finally(() => (loading.value = false));
     }

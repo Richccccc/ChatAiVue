@@ -2,6 +2,8 @@ import { http } from "@/utils/http";
 
 export type UserResult = {
   success: boolean;
+  message?: string; // Standard backend message field
+  error?: string; // Keep for compatibility if needed
   data: {
     /** 头像 */
     avatar: string;

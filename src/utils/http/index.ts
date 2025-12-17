@@ -15,6 +15,7 @@ import { useUserStoreHook } from "@/store/modules/user";
 
 // 相关配置请参考：www.axios-js.com/zh-cn/docs/#axios-request-config-1
 const defaultConfig: AxiosRequestConfig = {
+  baseURL: "/api",
   // 请求超时时间
   timeout: 10000,
   headers: {
@@ -126,6 +127,20 @@ class PureHttp {
         if (PureHttp.initConfig.beforeResponseCallback) {
           PureHttp.initConfig.beforeResponseCallback(response);
           return response.data;
+        }
+        // 如果后端返回的 success 为 false，则视为业务逻辑错误，抛出异常以便前端捕获处理
+        // 注意：这里需要根据后端的实际响应结构来判断。
+        // 根据 ApiResponse.java，后端返回 { success: boolean, data: T, message: string }
+        // 所以我们应该检查 response.data.success
+        if (response.data && response.data.success === false) {
+             // 构造一个 Error 对象，并将后端返回的 message 放入其中
+             const error: any = new Error(response.data.message || "请求失败");
+             error.response = response;
+             // 确保 error.message 是后端返回的 message
+             error.message = response.data.message; 
+             // 也可以附加一个 custom 属性
+             error.isBusinessError = true;
+             return Promise.reject(error);
         }
         return response.data;
       },

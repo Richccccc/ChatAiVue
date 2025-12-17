@@ -23,6 +23,7 @@ import { type menuType, routerArrays } from "@/layout/types";
 import { useMultiTagsStoreHook } from "@/store/modules/multiTags";
 import { usePermissionStoreHook } from "@/store/modules/permission";
 const IFrame = () => import("@/layout/frame.vue");
+const Layout = () => import("@/layout/index.vue");
 // https://cn.vitejs.dev/guide/features.html#glob-import
 const modulesRoutes = import.meta.glob("/src/views/**/*.{vue,tsx}");
 
@@ -65,7 +66,12 @@ function filterTree(data: RouteComponent[]) {
 
 /** 过滤children长度为0的的目录，当目录下没有菜单时，会过滤此目录，目录没有赋予roles权限，当目录下只要有一个菜单有显示权限，那么此目录就会显示 */
 function filterChildrenTree(data: RouteComponent[]) {
-  const newTree = cloneDeep(data).filter((v: any) => v?.children?.length !== 0);
+  const newTree = cloneDeep(data).filter((v: any) => {
+     // Backend returns empty array for leaves, so we shouldn't filter them out based on length=0
+     // We only filter if children is NOT undefined/null AND length is 0 AND it's not a leaf logic we can easily detect?
+     // Simplest fix: If it's from backstage, we assume the backend knows what it's doing and don't filter empty folders/leaves.
+     return v?.meta?.backstage ? true : v?.children?.length !== 0;
+  });
   newTree.forEach(
     (v: { children }) => v.children && (v.children = filterTree(v.children))
   );
@@ -198,32 +204,12 @@ function handleAsyncRoutes(routeList) {
 
 /** 初始化路由（`new Promise` 写法防止在异步请求中造成无限循环）*/
 function initRouter() {
-  if (getConfig()?.CachingAsyncRoutes) {
-    // 开启动态路由缓存本地localStorage
-    const key = "async-routes";
-    const asyncRouteList = storageLocal().getItem(key) as any;
-    if (asyncRouteList && asyncRouteList?.length > 0) {
-      return new Promise(resolve => {
-        handleAsyncRoutes(asyncRouteList);
-        resolve(router);
-      });
-    } else {
-      return new Promise(resolve => {
-        getAsyncRoutes().then(({ data }) => {
-          handleAsyncRoutes(cloneDeep(data));
-          storageLocal().setItem(key, data);
-          resolve(router);
-        });
-      });
-    }
-  } else {
-    return new Promise(resolve => {
-      getAsyncRoutes().then(({ data }) => {
-        handleAsyncRoutes(cloneDeep(data));
-        resolve(router);
-      });
-    });
-  }
+  return new Promise(resolve => {
+    // 静态路由模式，直接使用本地定义的路由，不再请求后端
+    // 确保 usePermissionStoreHook().wholeMenus 被正确初始化
+    usePermissionStoreHook().handleWholeMenus([]); 
+    resolve(router);
+  });
 }
 
 /**
@@ -312,6 +298,19 @@ function addAsyncRoutes(arrRoutes: Array<RouteRecordRaw>) {
   arrRoutes.forEach((v: RouteRecordRaw) => {
     // 将backstage属性加入meta，标识此路由为后端返回路由
     v.meta.backstage = true;
+
+    // 自动补全 name (如果后端返回空字符串)
+    if (!v.name || v.name === "") {
+        if (v.path && v.path.length > 1) {
+            // /model -> Model
+            let name = v.path.substring(1).replace(/\//g, "-");
+            name = name.charAt(0).toUpperCase() + name.slice(1);
+            v.name = name;
+        } else {
+             v.name = "RootMenu" + Math.random().toString(36).substr(2, 5);
+        }
+    }
+
     // 父级的redirect属性取值：如果子级存在且父级的redirect属性不存在，默认取第一个子级的path；如果子级存在且父级的redirect属性存在，取存在的redirect属性，会覆盖默认值
     if (v?.children && v.children.length && !v.redirect)
       v.redirect = v.children[0].path;
@@ -321,11 +320,20 @@ function addAsyncRoutes(arrRoutes: Array<RouteRecordRaw>) {
     if (v.meta?.frameSrc) {
       v.component = IFrame;
     } else {
-      // 对后端传component组件路径和不传做兼容（如果后端传component组件路径，那么path可以随便写，如果不传，component组件路径会跟path保持一致）
-      const index = v?.component
-        ? modulesRoutesKeys.findIndex(ev => ev.includes(v.component as any))
-        : modulesRoutesKeys.findIndex(ev => ev.includes(v.path));
-      v.component = modulesRoutes[modulesRoutesKeys[index]];
+      if (v.component === "layout") {
+         // Prevent double layout by replacing Layout with a simple View (RouterView)
+         // when processed as a flattened route child.
+         // However, the menu needs Layout to know it's a directory?
+         // The menu uses 'wholeMenus' which is separate from 'router.options.routes'.
+         // Here we are modifying the route object that goes into the router.
+        v.component = Layout;
+      } else {
+        // 对后端传component组件路径和不传做兼容（如果后端传component组件路径，那么path可以随便写，如果不传，component组件路径会跟path保持一致）
+        const index = v?.component
+          ? modulesRoutesKeys.findIndex(ev => ev.includes(v.component as any))
+          : modulesRoutesKeys.findIndex(ev => ev.includes(v.path));
+        v.component = modulesRoutes[modulesRoutesKeys[index]];
+      }
     }
     if (v?.children && v.children.length) {
       addAsyncRoutes(v.children);
@@ -388,10 +396,16 @@ function handleTopMenu(route) {
 
 /** 获取所有菜单中的第一个菜单（顶级菜单）*/
 function getTopMenu(tag = false): menuType {
+  // Use optional chaining carefully
+  const firstMenu = usePermissionStoreHook().wholeMenus[0];
+  if (!firstMenu) return null; // Safety check
+  
   const topMenu = handleTopMenu(
-    usePermissionStoreHook().wholeMenus[0]?.children[0]
+    firstMenu.children && firstMenu.children.length > 0 ? firstMenu.children[0] : firstMenu
   );
-  tag && useMultiTagsStoreHook().handleTags("push", topMenu);
+  if (tag && topMenu) {
+      useMultiTagsStoreHook().handleTags("push", topMenu);
+  }
   return topMenu;
 }
 

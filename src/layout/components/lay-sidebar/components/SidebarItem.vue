@@ -124,7 +124,7 @@ function resolvePath(routePath) {
       hasOneShowingChild(item.children, item) &&
       (!onlyOneChild.children || onlyOneChild.noShowingChildren)
     "
-    :to="item"
+    :to="onlyOneChild"
   >
     <el-menu-item
       :index="resolvePath(onlyOneChild.path)"

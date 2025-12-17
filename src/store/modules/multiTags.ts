@@ -17,7 +17,7 @@ import { usePermissionStoreHook } from "./permission";
 export const useMultiTagsStore = defineStore("pure-multiTags", {
   state: () => ({
     // 存储标签页信息（路由信息）
-    multiTags: storageLocal().getItem<StorageConfigs>(
+    multiTags: (storageLocal().getItem<StorageConfigs>(
       `${responsiveStorageNameSpace()}configure`
     )?.multiTagsCache
       ? storageLocal().getItem<StorageConfigs>(
@@ -28,7 +28,7 @@ export const useMultiTagsStore = defineStore("pure-multiTags", {
           ...usePermissionStoreHook().flatteningRoutes.filter(
             v => v?.meta?.fixedTag
           )
-        ] as any),
+        ] as any))?.filter(v => v?.meta?.title !== "首页" && v?.name !== "Welcome"),
     multiTagsCache: storageLocal().getItem<StorageConfigs>(
       `${responsiveStorageNameSpace()}configure`
     )?.multiTagsCache
@@ -80,6 +80,7 @@ export const useMultiTagsStore = defineStore("pure-multiTags", {
             if (isBoolean(tagVal?.meta?.showLink) && !tagVal?.meta?.showLink)
               return;
             const tagPath = tagVal.path;
+            if (!tagPath) return; // Add check for tagPath
             const tagHasExits = this.multiTags.some(tag => {
               return (
                 tag.path === tagPath &&

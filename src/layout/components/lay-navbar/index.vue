@@ -41,11 +41,11 @@ const {
 
     <div v-if="layout === 'vertical'" class="vertical-header-right">
       <!-- 菜单搜索 -->
-      <LaySearch id="header-search" />
+      <!-- <LaySearch id="header-search" /> -->
       <!-- 全屏 -->
-      <LaySidebarFullScreen id="full-screen" />
+      <!-- <LaySidebarFullScreen id="full-screen" /> -->
       <!-- 消息通知 -->
-      <LayNotice id="header-notice" />
+      <!-- <LayNotice id="header-notice" /> -->
       <!-- 退出登录 -->
       <el-dropdown trigger="click">
         <span class="el-dropdown-link navbar-bg-hover select-none">
@@ -64,13 +64,13 @@ const {
           </el-dropdown-menu>
         </template>
       </el-dropdown>
-      <span
+      <!-- <span
         class="set-icon navbar-bg-hover"
         title="打开系统配置"
         @click="onPanel"
       >
         <IconifyIconOffline :icon="Setting" />
-      </span>
+      </span> -->
     </div>
   </div>
 </template>
